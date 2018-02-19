@@ -1,0 +1,146 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id" : "http://tiltedt.com/schemas/jdf.json",
+
+  "definitions" : {
+    "metadataType" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "title" : "Element ID",
+          "description" : "An arbitrarily defined element ID that is used during data export operations",
+          "type" : "string" },
+        "uuid" : {
+          "title" : "Element UUID",
+          "description" : "A Version 4 random UUID",
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"},
+        "revision" : {
+          "title" : "Revision Number",
+          "description" : "Integer representing the form element revision default is 1",
+          "type" : "number",
+          "default" : 1},
+        "version" : {
+          "title" : "Human Readable Version Number",
+          "description" : "Human-readable string displaying a logical version number to the user",
+          "type" : "string",
+          "default" : "1.0"},
+        "label" : {
+          "title" : "Element Label",
+          "description" : "Human-readable string displayed to the user",
+          "type" : "string"},
+        "description" : {
+          "title" : "Element Description",
+          "description" : "An optional element description to provide context or help associated with the given element",
+          "type" : "string"}
+      },
+      "required" : ["id", "uuid", "revision", "label"]
+    },
+    "stubType" : {
+      "type" : "object",
+      "properties" : {
+        "metadata" : {"$ref" : "#/definitions/metadataType"},
+        "type" : { "type" : "string", "enum" : ["stub"]}
+      }
+    },
+    "labelType" : {
+      "type" : "object",
+      "properties" : {
+        "type" : { "type" : "string", "enum" : ["label"]},
+        "asHTML" : { "type" : "boolean", "default" : "true"},
+        "label" : {"type" : "string"}
+      },
+      "required" : ["type", "label"]
+    },
+    "itemsType" : {
+      "type" : "object",
+      "properties" : {
+        "sequence" : { "type" : "number",  "default" : 1 },
+        "label" : {"type" : "string"},
+        "selected" : {"type" : "boolean", "default" : false}
+      },
+      "required" : [ "sequence", "label"]
+    },
+    "toggleButtonType" : {
+      "type" : "object",
+      "properties" : {
+        "type" : { "type" : "string", "enum" : ["toggleButton"]},
+        "options" : { "type" : "array", "items" : { "$ref" : "#/definitions/itemsType"}}
+      },
+      "required" : ["type", "options"]
+    },
+    "fieldType" : {
+      "oneOf" : [
+        {"$ref" : "#/definitions/labelType"},
+        {"$ref" : "#/definitions/toggleButtonType"}
+      ]
+    },
+    "sectionType" : {
+      "allOf" : [
+        {"$ref" : "#/definitions/metadataType"},
+        {
+          "type" : "object",
+          "properties" : {
+            "type" : { "type" : "string", "enum" : ["section"]},
+            "sequence" : { "type" : "number",  "default" : "1" },
+            "header" : { "type" : "string", "title" : "Primary Section Heading Label", "description" : "Mandatory form section heading label"},
+            "subHeader" : { "type" : "string", "title" : "Secondary Section Heading", "description" : "An optional form section sub-heading label displayed in addition to the major section heading label"},
+            "numberedFields" : { "type" : "boolean", "default" : "false"},
+            "items" : { "type" : "array", "items" : {"$ref" : "#/definitions/fieldType"}}
+          },
+          "required" : [ "type", "sequence", "header", "items"]
+        }
+      ]
+    },
+    "formType" : {
+      "allOf" : [
+        { "$ref" : "#/defined/metadataType"},
+        {
+          "type" : "object",
+          "properties" : {
+            "type" : { "type" : "string", "enum" : ["form"]},
+            "items" : {"type" : "array", "items" : {"$ref" : "#/definitions/sectionType"}}
+          },
+          "required" : [ "type", "items"]
+        }
+      ]
+    },
+    "catalogType" : {
+      "allOf" : [
+        { "$ref" : "#/defined/metadataType"},
+        {
+          "type" : "object",
+          "properties" : {
+            "type" : { "type" : "string", "enum" : ["catalog"]},
+            "items" : {"type" : "array", "items" : {"$ref" : "#/definitions/stubType"}}
+          },
+          "required" : [ "type", "items"]
+        }
+      ]
+    },
+    "workflowType" : {
+      "allOf" : [
+        { "$ref" : "#/defined/metadataType"},
+        {
+          "type" : "object",
+          "properties" : {
+            "type" : { "type" : "string", "enum" : ["workflow"]},
+            "items" : {"type" : "array", "items" : {"$ref" : "#/definitions/stubType"}}
+          },
+          "required" : [ "type", "items"]
+        }
+      ]
+    }
+  },
+
+  "type": "array",
+
+  "items" : {
+    "oneOf" : [
+      {"$ref" : "#/definitions/formType"},
+      {"$ref" : "#/definitions/catalogType"},
+      {"$ref" : "#/definitions/workflowType"}
+    ]
+  }
+}
+
